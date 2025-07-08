@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .title {
+            color: #fff;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            font-weight: 300;
+            letter-spacing: 3px;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .game-mode {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+
+        .mode-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(45deg, #10b981, #059669);
+            border-color: #10b981;
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .mode-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .mode-btn.active:hover {
+            background: linear-gradient(45deg, #059669, #047857);
+        }
+
+        .game-info {
+            margin-bottom: 30px;
+        }
+
+        .current-player {
+            color: #fbbf24;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .score-item {
+            text-align: center;
+        }
+
+        .score-label {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .score-value {
+            color: #fff;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 15px;
+            font-size: 3rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cell::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .cell:hover::before {
+            opacity: 1;
+        }
+
+        .cell:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .cell.x {
+            color: #ef4444;
+            text-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+        }
+
+        .cell.o {
+            color: #3b82f6;
+            text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+        }
+
+        .cell.winning {
+            background: linear-gradient(45deg, #10b981, #059669);
+            animation: pulse 0.5s ease-in-out infinite alternate;
+        }
+
+        .cell:disabled {
+            cursor: not-allowed;
+        }
+
+        .cell:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        @keyframes pulse {
+            from {
+                transform: scale(1);
+                box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+            }
+            to {
+                transform: scale(1.05);
+                box-shadow: 0 0 30px rgba(16, 185, 129, 0.8);
+            }
+        }
+
+        .game-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-restart {
+            background: linear-gradient(45deg, #8b5cf6, #7c3aed);
+            color: white;
+        }
+
+        .btn-restart:hover {
+            background: linear-gradient(45deg, #7c3aed, #6d28d9);
+        }
+
+        .btn-reset {
+            background: linear-gradient(45deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: linear-gradient(45deg, #dc2626, #b91c1c);
+        }
+
+        .game-status {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .status-message {
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .winner {
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        .tie {
+            color: #fbbf24;
+            font-weight: bold;
+        }
+
+        .difficulty-selector {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .difficulty-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .difficulty-btn.active {
+            background: linear-gradient(45deg, #f59e0b, #d97706);
+            border-color: #f59e0b;
+        }
+
+        .difficulty-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .thinking {
+            color: #fbbf24;
+            font-style: italic;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.5; }
+        }
+
+        /* Responsive design */
+        @media (max-width: 600px) {
+            .game-container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .title {
+                font-size: 2rem;
+            }
+
+            .cell {
+                font-size: 2rem;
+            }
+
+            .game-mode {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .mode-btn {
+                width: 200px;
+            }
+
+            .game-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1 class="title">TIC-TAC-TOE</h1>
+        
+        <div class="game-mode">
+            <button class="mode-btn active" id="pvpMode">Player vs Player</button>
+            <button class="mode-btn" id="pvcMode">Player vs Computer</button>
+        </div>
+
+        <div class="difficulty-selector" id="difficultySelector" style="display: none;">
+            <button class="difficulty-btn active" data-difficulty="easy">Easy</button>
+            <button class="difficulty-btn" data-difficulty="medium">Medium</button>
+            <button class="difficulty-btn" data-difficulty="hard">Hard</button>
+        </div>
+
+        <div class="score-board">
+            <div class="score-item">
+                <div class="score-label">Player X</div>
+                <div class="score-value" id="scoreX">0</div>
+            </div>
+            <div class="score-item">
+                <div class="score-label">Ties</div>
+                <div class="score-value" id="scoreTies">0</div>
+            </div>
+            <div class="score-item">
+                <div class="score-label" id="player2Label">Player O</div>
+                <div class="score-value" id="scoreO">0</div>
+            </div>
+        </div>
+
+        <div class="game-status">
+            <div class="status-message" id="statusMessage">
+                <span class="current-player">Player X's turn</span>
+            </div>
+        </div>
+
+        <div class="game-board" id="gameBoard">
+            <button class="cell" data-index="0"></button>
+            <button class="cell" data-index="1"></button>
+            <button class="cell" data-index="2"></button>
+            <button class="cell" data-index="3"></button>
+            <button class="cell" data-index="4"></button>
+            <button class="cell" data-index="5"></button>
+            <button class="cell" data-index="6"></button>
+            <button class="cell" data-index="7"></button>
+            <button class="cell" data-index="8"></button>
+        </div>
+
+        <div class="game-controls">
+            <button class="btn btn-restart" id="restartBtn">New Game</button>
+            <button class="btn btn-reset" id="resetBtn">Reset Score</button>
+        </div>
+    </div>
+
+    <script>
+        class TicTacToe {
+            constructor() {
+                this.board = Array(9).fill('');
+                this.currentPlayer = 'X';
+                this.gameMode = 'pvp'; // 'pvp' or 'pvc'
+                this.difficulty = 'medium';
+                this.gameOver = false;
+                this.scores = { X: 0, O: 0, ties: 0 };
+                this.isThinking = false;
+                
+                this.initializeElements();
+                this.bindEvents();
+                this.loadScores();
+            }
+
+            initializeElements() {
+                this.cells = document.querySelectorAll('.cell');
+                this.statusMessage = document.getElementById('statusMessage');
+                this.pvpModeBtn = document.getElementById('pvpMode');
+                this.pvcModeBtn = document.getElementById('pvcMode');
+                this.difficultySelector = document.getElementById('difficultySelector');
+                this.difficultyBtns = document.querySelectorAll('.difficulty-btn');
+                this.restartBtn = document.getElementById('restartBtn');
+                this.resetBtn = document.getElementById('resetBtn');
+                this.scoreX = document.getElementById('scoreX');
+                this.scoreO = document.getElementById('scoreO');
+                this.scoreTies = document.getElementById('scoreTies');
+                this.player2Label = document.getElementById('player2Label');
+            }
+
+            bindEvents() {
+                this.cells.forEach(cell => {
+                    cell.addEventListener('click', (e) => this.handleCellClick(e));
+                });
+
+                this.pvpModeBtn.addEventListener('click', () => this.setGameMode('pvp'));
+                this.pvcModeBtn.addEventListener('click', () => this.setGameMode('pvc'));
+                
+                this.difficultyBtns.forEach(btn => {
+                    btn.addEventListener('click', (e) => this.setDifficulty(e.target.dataset.difficulty));
+                });
+
+                this.restartBtn.addEventListener('click', () => this.restartGame());
+                this.resetBtn.addEventListener('click', () => this.resetScores());
+            }
+
+            setGameMode(mode) {
+                this.gameMode = mode;
+                this.pvpModeBtn.classList.toggle('active', mode === 'pvp');
+                this.pvcModeBtn.classList.toggle('active', mode === 'pvc');
+                
+                if (mode === 'pvc') {
+                    this.difficultySelector.style.display = 'flex';
+                    this.player2Label.textContent = 'Computer';
+                } else {
+                    this.difficultySelector.style.display = 'none';
+                    this.player2Label.textContent = 'Player O';
+                }
+                
+                this.restartGame();
+            }
+
+            setDifficulty(difficulty) {
+                this.difficulty = difficulty;
+                this.difficultyBtns.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.difficulty === difficulty);
+                });
+                this.restartGame();
+            }
+
+            handleCellClick(e) {
+                const index = parseInt(e.target.dataset.index);
+                
+                if (this.board[index] || this.gameOver || this.isThinking) {
+                    return;
+                }
+
+                this.makeMove(index, this.currentPlayer);
+                
+                if (!this.gameOver && this.gameMode === 'pvc' && this.currentPlayer === 'O') {
+                    this.isThinking = true;
+                    this.updateStatus('Computer is thinking...');
+                    setTimeout(() => {
+                        this.makeComputerMove();
+                        this.isThinking = false;
+                    }, 500);
+                }
+            }
+
+            makeMove(index, player) {
+                this.board[index] = player;
+                this.cells[index].textContent = player;
+                this.cells[index].classList.add(player.toLowerCase());
+                this.cells[index].disabled = true;
+
+                const result = this.checkGameResult();
+                if (result) {
+                    this.endGame(result);
+                } else {
+                    this.currentPlayer = this.currentPlayer === 'X' ? 'O' : 'X';
+                    this.updateStatus(`Player ${this.currentPlayer}'s turn`);
+                }
+            }
+
+            makeComputerMove() {
+                let move;
+                
+                switch (this.difficulty) {
+                    case 'easy':
+                        move = this.getRandomMove();
+                        break;
+                    case 'medium':
+                        move = this.getMediumMove();
+                        break;
+                    case 'hard':
+                        move = this.getBestMove();
+                        break;
+                }
+                
+                if (move !== -1) {
+                    this.makeMove(move, 'O');
+                }
+            }
+
+            getRandomMove() {
+                const availableMoves = this.board.map((cell, index) => cell === '' ? index : null)
+                    .filter(val => val !== null);
+                return availableMoves[Math.floor(Math.random() * availableMoves.length)];
+            }
+
+            getMediumMove() {
+                // 70% chance to play optimally, 30% chance to play randomly
+                if (Math.random() < 0.7) {
+                    return this.getBestMove();
+                } else {
+                    return this.getRandomMove();
+                }
+            }
+
+            getBestMove() {
+                // Try to win
+                let move = this.findWinningMove('O');
+                if (move !== -1) return move;
+
+                // Try to block player from winning
+                move = this.findWinningMove('X');
+                if (move !== -1) return move;
+
+                // Take center if available
+                if (this.board[4] === '') return 4;
+
+                // Take corners
+                const corners = [0, 2, 6, 8];
+                for (let corner of corners) {
+                    if (this.board[corner] === '') return corner;
+                }
+
+                // Take any available move
+                return this.getRandomMove();
+            }
+
+            findWinningMove(player) {
+                const winPatterns = [
+                    [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+                    [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+                    [0, 4, 8], [2, 4, 6] // diagonals
+                ];
+
+                for (let pattern of winPatterns) {
+                    const [a, b, c] = pattern;
+                    const line = [this.board[a], this.board[b], this.board[c]];
+                    
+                    if (line.filter(cell => cell === player).length === 2 && 
+                        line.filter(cell => cell === '').length === 1) {
+                        return pattern[line.indexOf('')];
+                    }
+                }
+                
+                return -1;
+            }
+
+            checkGameResult() {
+                const winPatterns = [
+                    [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+                    [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+                    [0, 4, 8], [2, 4, 6] // diagonals
+                ];
+
+                for (let pattern of winPatterns) {
+                    const [a, b, c] = pattern;
+                    if (this.board[a] && this.board[a] === this.board[b] && this.board[a] === this.board[c]) {
+                        return { winner: this.board[a], pattern };
+                    }
+                }
+
+                if (this.board.every(cell => cell !== '')) {
+                    return { winner: 'tie' };
+                }
+
+                return null;
+            }
+
+            endGame(result) {
+                this.gameOver = true;
+                this.cells.forEach(cell => cell.disabled = true);
+
+                if (result.winner === 'tie') {
+                    this.updateStatus('It\'s a tie!');
+                    this.scores.ties++;
+                } else {
+                    const winnerName = this.gameMode === 'pvc' && result.winner === 'O' ? 'Computer' : `Player ${result.winner}`;
+                    this.updateStatus(`${winnerName} wins!`);
+                    this.scores[result.winner]++;
+                    
+                    // Highlight winning cells
+                    result.pattern.forEach(index => {
+                        this.cells[index].classList.add('winning');
+                    });
+                }
+
+                this.updateScoreDisplay();
+                this.saveScores();
+            }
+
+            updateStatus(message) {
+                if (message.includes('wins')) {
+                    this.statusMessage.innerHTML = `<span class="winner">${message}</span>`;
+                } else if (message.includes('tie')) {
+                    this.statusMessage.innerHTML = `<span class="tie">${message}</span>`;
+                } else if (message.includes('thinking')) {
+                    this.statusMessage.innerHTML = `<span class="thinking">${message}</span>`;
+                } else {
+                    this.statusMessage.innerHTML = `<span class="current-player">${message}</span>`;
+                }
+            }
+
+            updateScoreDisplay() {
+                this.scoreX.textContent = this.scores.X;
+                this.scoreO.textContent = this.scores.O;
+                this.scoreTies.textContent = this.scores.ties;
+            }
+
+            restartGame() {
+                this.board = Array(9).fill('');
+                this.currentPlayer = 'X';
+                this.gameOver = false;
+                this.isThinking = false;
+                
+                this.cells.forEach(cell => {
+                    cell.textContent = '';
+                    cell.disabled = false;
+                    cell.classList.remove('x', 'o', 'winning');
+                });
+
+                this.updateStatus('Player X\'s turn');
+            }
+
+            resetScores() {
+                this.scores = { X: 0, O: 0, ties: 0 };
+                this.updateScoreDisplay();
+                this.saveScores();
+                this.restartGame();
+            }
+
+            saveScores() {
+                const data = {
+                    scores: this.scores,
+                    gameMode: this.gameMode,
+                    difficulty: this.difficulty
+                };
+                // In a real application, you would save to localStorage
+                // localStorage.setItem('tictactoe-data', JSON.stringify(data));
+            }
+
+            loadScores() {
+                // In a real application, you would load from localStorage
+                // const saved = localStorage.getItem('tictactoe-data');
+                // if (saved) {
+                //     const data = JSON.parse(saved);
+                //     this.scores = data.scores || { X: 0, O: 0, ties: 0 };
+                //     this.gameMode = data.gameMode || 'pvp';
+                //     this.difficulty = data.difficulty || 'medium';
+                // }
+                this.updateScoreDisplay();
+            }
+        }
+
+        // Initialize the game when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new TicTacToe();
+        });
+    </script>
+</body>
+</html>
